@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/styel.css">
+    <title>流程图DEMO</title>
+</head>
+
+<body>
+
+    <div class="art" onmousemove="move()">
+        <canvas id="myCanvas" width="1900px" height="800px"></canvas>
+        <div class="left">
+            <div class="left_start">
+                <p>开始</p>
+            </div>
+            <div class="left_over">
+                <p>结束</p>
+            </div>
+        </div>
+        <div class="xy">
+        </div>
+        <div class="value">
+            <input type="text" class="input">
+            <input type="submit" value="修改" onclick="sumbit()">
+            <input type="submit" value="删除" onclick="del()">
+        </div>
+        <input type="submit" value="储存" onclick="josn()" class="josn">
+        <input type="submit" value="读取" onclick="write1()" class="write">
+        <input type="submit" value="画出" onclick="drow()" class="drow">
+    </div>
+    <script src="js/js_jquery-1.11.1.min.js"></script>
+    <script>
+        var div, text, startX, startY, endX, endY = null
+        var draw = false
+        var e
+        var array=[],arraylist=[],linearray=[]
+
+        //存储
+       function josn()
+        {
+           let start= $(".art>div");
+           console.log(start);
+           start.each(function(){
+            if($(this).val())
+               {    
+                    array.push($(this).css("top"),$(this).css("left"),$(this).children("p").text(),$(this).css("width"),$(this).css("height"),$(this).css("color"),$(this).css("border"))
+               }
+               if(array.length)
+               {
+                arraylist.push(array);
+               }
+               array=[]  
+           })
+           if(arraylist.length)
+           {
+            window.localStorage.setItem('arraylist',JSON.stringify(arraylist))
+            window.localStorage.setItem('linearray',JSON.stringify(linearray))
+           arraylist=[]
+           linearray=[]
+           alert("储存成功！")
+           }
+           else
+           {
+               alert("先画图在存哦！")
+           }
+
+        }
+        //画出
+        function drow()
+        {
+            window.location.href="drow.html"
+        }
+        //读取
+        function write1()
+        {
+            var localStorage=JSON.parse(window.localStorage.getItem("arraylist"))
+            var localStorage1=JSON.parse(window.localStorage.getItem("linearray"))
+            console.log(localStorage+localStorage1);
+            alert(localStorage+localStorage1)
+        }
+        //画线条
+        function canvas(startX, startY, endX, endY) {
+            console.log(startX, startY, endX, endY)
+            var oCanvas = document.getElementById("myCanvas");
+            var oGc = oCanvas.getContext('2d');
+            oGc.moveTo(startX, startY);
+            oGc.lineTo(endX, endY);
+            oGc.stroke();
+            let line=[startX, startY, endX, endY]
+            linearray.push(line)
+            draw = false
+        }
+        //删除矩形
+        function del() {
+            text.remove()
+            $(".input").val(" ")
+        }
+        //修改名字
+        function sumbit() {
+            text.children("P").text($(".input").val())
+
+        }
+        //移动
+        function move() {
+            e = event || window.event;
+            $(".xy").text("x:" + e.clientX + "y:" + e.clientY);
+            if (div != null) {
+
+                div.x = e.clientX;
+                div.y = e.clientY;
+                div.css("top", e.clientY);
+                div.css("left", e.clientX);
+                startX = null
+                startY = null
+                draw = false
+            }
+        }
+        $(function () {
+            //移动判断标识
+            var hasmove = false;
+            $(".art>.left>div").mousedown(function () {
+                hasmove = false;
+                 //重置标识
+                var newNode = $(this).clone(true);
+                div = newNode;
+                if (!newNode.css("top")) {
+                    newNode.css("position", "absolute")
+                    newNode.x = e.clientX;
+                    newNode.y = e.clientY;
+                    newNode.css("top", e.clientY);
+                    newNode.css("left", e.clientX);
+                    newNode.val("11");
+                    $('.art').append(newNode);
+
+                } else {
+                    div = $(this)
+                }
+              
+            });
+   
+            $(".art>.left>div").mouseup(function () {
+                //判断标识
+                console.log(hasmove)
+                if (hasmove) {
+                    //移动
+                    div = null
+                   
+                } else {
+                    //未移动
+                    div = null
+                    text = $(this)
+                    $(".input").val($(this).children("P").text())
+                    if (!draw) {
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        draw = true
+
+                    } else {
+                        endX = e.clientX;
+                        endY = e.clientY;
+                        canvas(startX, startY, endX, endY);
+                        startX = null
+                        startY = null
+                        endX = null
+                        endY = null
+                    }
+                }
+            });
+            $(".art>.left>div").mousemove(function () {
+                hasmove = true
+                
+            });
+
+
+        });
+    </script>
+</body>
+
+</html>
